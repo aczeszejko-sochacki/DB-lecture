@@ -1,0 +1,4 @@
+BEGIN;
+	\i exec1.dmp
+	\i 2.dmp
+COMMIT;

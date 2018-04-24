@@ -1,0 +1,4 @@
+BEGIN;
+	\i base.dmp
+	\i 1.dmp
+COMMIT;

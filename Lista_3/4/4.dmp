@@ -1,0 +1,34 @@
+DROP DOMAIN IF EXISTS rodzaje_zajec CASCADE;
+
+CREATE DOMAIN rodzaje_zajec AS char(1) NOT NULL
+CHECK (VALUE IN ('w', 'W', 'c', 'C', 'p', 'P', 'r', 'R', 's', 'S', 'e', 'E'));
+
+ALTER TABLE grupa ALTER COLUMN rodzaj_zajec TYPE rodzaje_zajec;
+
+DROP VIEW IF EXISTS obsada_zajec_view CASCADE;
+
+CREATE VIEW obsada_zajec_view AS 
+SELECT pracownik.kod_uz AS prac_kod, nazwisko AS prac_nazwisko,
+	kod_przed AS przed_kod, nazwa AS przed_nazwa, rodzaj_zajec,
+	COUNT(DISTINCT grupa.kod_grupy) AS liczba_grup,
+	COUNT(wybor.kod_uz) AS liczba_studentow
+FROM pracownik JOIN grupa USING(kod_uz)
+	JOIN przedmiot_semestr USING(kod_przed_sem)
+	JOIN przedmiot USING(kod_przed)
+	JOIN wybor ON(wybor.kod_grupy = grupa.kod_grupy)
+GROUP BY kod_przed, rodzaj_zajec, pracownik.kod_uz, nazwa;
+
+DROP TABLE IF EXISTS obsada_zajec_tab CASCADE;
+
+CREATE TABLE obsada_zajec_tab(
+	prac_kod integer NOT NULL,
+	nazwisko character varying(30) NOT NULL,
+	przed_kod integer NOT NULL,
+	przed_nazwa text NOT NULL,
+	rodzaj_zajec rodzaje_zajec NOT NULL,
+	liczba_grup integer NOT NULL,
+	liczba_studentow integer NOT NULL
+);
+
+INSERT INTO obsada_zajec_tab
+SELECT * FROM obsada_zajec_view;

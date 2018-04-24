@@ -1,0 +1,16 @@
+DROP DOMAIN IF EXISTS semestry CASCADE;
+DROP SEQUENCE IF EXISTS numer_semestru CASCADE;
+
+CREATE DOMAIN semestry AS text
+NOT NULL
+CHECK (VALUE IN ('zimowy', 'letni'));
+
+CREATE SEQUENCE numer_semestru START 40;
+
+ALTER TABLE semestr ADD COLUMN semestr semestry
+DEFAULT 'letni';
+ALTER TABLE semestr ADD COLUMN rok varchar(9);
+
+UPDATE semestr SET semestr = SPLIT_PART(nazwa, ' ', 2);
+UPDATE semestr SET rok = SPLIT_PART(nazwa, ' ', 3);
+ALTER TABLE semestr DROP COLUMN nazwa;

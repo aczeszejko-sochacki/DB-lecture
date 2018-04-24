@@ -1,0 +1,25 @@
+INSERT INTO semestr VALUES(nextval('numer_semestru'), 'zimowy', '2013/2014');
+INSERT INTO semestr VALUES(nextval('numer_semestru'), 'letni', '2013/2014');
+
+DROP SEQUENCE IF EXISTS numer_przedmiot_semestr;
+DROP SEQUENCE IF EXISTS numer_grupy;
+
+CREATE SEQUENCE numer_przedmiot_semestr START 4220;
+CREATE SEQUENCE numer_grupy START 6120;
+
+DROP TABLE IF EXISTS edycje CASCADE;
+CREATE TABLE edycje(
+	numer_kod_przed_semestr integer NOT NULL DEFAULT 0,
+	semestr_id integer DEFAULT 0 NOT NULL,
+	kod_przed integer DEFAULT 0 NOT NULL
+);
+
+INSERT INTO edycje 
+SELECT semestr_id, kod_przed
+FROM przedmiot JOIN przedmiot_semestr USING(kod_przed)
+	JOIN semestr USING(semestr_id)
+WHERE (rodzaj = 'o' OR rodzaj = 'p')
+	AND rok = '2010/2011';
+
+UPDATE edycje SET kod_przed = nextval('numer_przedmiot_semestr');
+
