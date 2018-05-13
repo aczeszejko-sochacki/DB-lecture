@@ -1,0 +1,77 @@
+CREATE OR REPLACE FUNCTION pierwszy_zapis(int, int)
+RETURNS timestamp with time zone AS
+$X$
+	SELECT MIN(data)
+	FROM wybor JOIN grupa USING(kod_grupy)
+		JOIN przedmiot_semestr USING(kod_przed_sem)
+	WHERE wybor.kod_uz = $1 AND semestr_id = $2
+$X$
+LANGUAGE SQL STABLE;
+
+
+SELECT DISTINCT nazwisko, pierwszy_zapis(student.kod_uz, semestr_id)
+FROM student JOIN wybor USING(kod_uz)
+	JOIN grupa USING(kod_grupy)
+	JOIN przedmiot_semestr USING(kod_przed_sem)
+	JOIN semestr USING(semestr_id)
+WHERE nazwisko LIKE 'A%'
+	AND semestr_id = 33
+ORDER BY 2;
+
+
+DROP TYPE IF EXISTS plan CASCADE;
+CREATE TYPE plan AS (przedmiot_nazwa text, rodzaj_zajec character(1), 
+	termin character(13), sala character varying(3), liczba_osob bigint);
+
+
+CREATE OR REPLACE FUNCTION plan_zajec_prac(int, int) 
+RETURNS SETOF plan AS
+$X$
+	SELECT nazwa, rodzaj_zajec, termin, sala, COUNT(*)
+	FROM pracownik JOIN grupa USING(kod_uz)
+		JOIN przedmiot_semestr USING(kod_przed_sem)
+		JOIN przedmiot USING(kod_przed)
+		JOIN wybor USING(kod_grupy)
+		JOIN student ON(student.kod_uz = wybor.kod_uz)
+	WHERE grupa.kod_uz = $1 AND semestr_id = $2
+	GROUP BY grupa.kod_grupy, nazwa, rodzaj_zajec, termin, sala;
+$X$
+LANGUAGE SQL STABLE;
+
+
+SELECT plan_zajec_prac(187, 39);
+
+
+CREATE OR REPLACE FUNCTION przydziel_praktyki()
+RETURNS void AS
+$X$
+DECLARE oferta_p int;
+	student int;
+
+BEGIN
+	FOR student IN(
+		SELECT kod_uz
+		FROM student LEFT JOIN praktyki ON(
+			student.kod_uz = praktyki.student)
+		WHERE semestr BETWEEN 6 AND 10)
+
+	LOOP
+		SELECT kod_oferty INTO oferta_p
+		FROM oferta_praktyki
+		WHERE liczba_miejsc > 0;
+
+		IF oferta_p IS NULL THEN EXIT;
+		ELSE
+			INSERT INTO praktyki
+			VALUES(student, NULL, oferta_p);
+			
+			UPDATE oferta_praktyki
+			SET liczba_miejsc = liczba_miejsc - 1
+			WHERE kod_oferty = oferta_p;
+		END IF;
+	END LOOP;
+END
+$X$LANGUAGE PLPGSQL VOLATILE;
+
+
+SELECT przydziel_praktyki();

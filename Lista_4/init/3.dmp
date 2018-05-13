@@ -1,0 +1,28 @@
+DROP TABLE IF EXISTS pracownik CASCADE;
+DROP TABLE IF EXISTS student CASCADE;
+
+CREATE TABLE pracownik(
+	kod_uz integer PRIMARY KEY,
+	imie character varying(15) NOT NULL,
+	nazwisko character varying(30) NOT NULL
+);
+CREATE TABLE student(
+	kod_uz integer PRIMARY KEY,
+	imie character varying(15) NOT NULL,
+	nazwisko character varying(30) NOT NULL,
+	semestr smallint
+);
+
+INSERT INTO pracownik 
+SELECT DISTINCT kod_uz, imie, nazwisko
+FROM uzytkownik JOIN grupa USING(kod_uz)
+WHERE semestr = 0;
+
+INSERT INTO student
+SELECT DISTINCT kod_uz, imie, nazwisko, semestr
+FROM uzytkownik JOIN wybor USING(kod_uz);
+
+ALTER TABLE grupa ADD FOREIGN KEY(kod_uz) REFERENCES pracownik(kod_uz);
+ALTER TABLE wybor ADD FOREIGN KEY(kod_uz) REFERENCES student(kod_uz);
+
+DROP TABLE uzytkownik CASCADE;

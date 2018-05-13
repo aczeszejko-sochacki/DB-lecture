@@ -1,0 +1,34 @@
+DROP TABLE IF EXISTS firma CASCADE;
+
+CREATE TABLE firma(
+	kod_firmy SERIAL PRIMARY KEY,
+	nazwa text NOT NULL,
+	adres text NOT NULL,
+	kontakt text NOT NULL
+);
+
+INSERT INTO firma VALUES
+	(DEFAULT, 'SNS', 'Wrocław', 'H.Kloss'),
+	(DEFAULT, 'BIT', 'Kraków', 'H.Brunner'),
+	(DEFAULT, 'MIT', 'Berlin', 'J.Kos');
+
+DROP TABLE IF EXISTS oferta_praktyki CASCADE;
+
+CREATE TABLE oferta_praktyki(
+	kod_oferty SERIAL PRIMARY KEY, 
+	kod_firmy integer REFERENCES firma(kod_firmy),
+	semestr_id integer REFERENCES semestr(semestr_id),
+	liczba_miejsc integer
+);
+
+INSERT INTO oferta_praktyki VALUES
+	(DEFAULT, 1, 41, 3),
+	(DEFAULT, 3, 41, 2);
+
+DROP TABLE IF EXISTS praktyki CASCADE;
+
+CREATE TABLE praktyki(
+	student integer REFERENCES student(kod_uz),
+	opiekun integer REFERENCES pracownik(kod_uz),
+	oferta integer REFERENCES oferta_praktyki(kod_oferty)
+);

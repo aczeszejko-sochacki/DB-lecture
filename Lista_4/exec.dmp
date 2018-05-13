@@ -1,0 +1,4 @@
+BEGIN;
+	\i init/exec5.dmp
+	\i functions.dmp
+COMMIT;
