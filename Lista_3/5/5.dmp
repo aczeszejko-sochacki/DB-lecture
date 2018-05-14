@@ -13,7 +13,7 @@ INSERT INTO firma VALUES
 	(DEFAULT, 'MIT', 'Berlin', 'J.Kos');
 
 DROP TABLE IF EXISTS oferta_praktyki CASCADE;
-:
+
 CREATE TABLE oferta_praktyki(
 	kod_oferty SERIAL PRIMARY KEY, 
 	kod_firmy integer REFERENCES firma(kod_firmy),
